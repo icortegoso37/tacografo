@@ -1,0 +1,1340 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0b0e11" />
+<title>Tacógrafo - Planning CE 561/2006</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  :root{
+    --bg:#0b0e11;--bg2:#11161c;--bg3:#1a212a;--line:#243040;
+    --tx:#e7eef7;--tx2:#9aa7b8;--tx3:#5d6c80;
+    --acc:#22c55e;--warn:#f59e0b;--info:#3b82f6;--orange:#f97316;
+    --red:#ef4444;--purple:#a855f7;--cyan:#06b6d4;
+    --drive:#22c55e;--brk:#fbbf24;--dailyr:#3b82f6;--weeklyr:#f97316;--work:#a855f7;--avail:#06b6d4;
+    --r:12px;--r2:16px;
+  }
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;font-size:16px;line-height:1.4}
+  body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+  header{position:sticky;top:0;background:rgba(11,14,17,.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);z-index:50;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  header h1{font-size:18px;margin:0;font-weight:700;letter-spacing:.2px}
+  header h1 span{color:var(--acc)}
+  .lang{display:flex;background:var(--bg3);border-radius:999px;padding:3px;gap:2px}
+  .lang button{background:transparent;color:var(--tx2);border:0;padding:6px 12px;border-radius:999px;font-weight:700;font-size:13px;cursor:pointer}
+  .lang button.on{background:var(--acc);color:#0b1410}
+  nav{display:flex;background:var(--bg2);border-bottom:1px solid var(--line);position:sticky;top:54px;z-index:49;overflow-x:auto;scrollbar-width:none}
+  nav::-webkit-scrollbar{display:none}
+  nav button{flex:0 0 auto;background:transparent;color:var(--tx2);border:0;padding:14px 18px;font-size:15px;font-weight:600;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
+  nav button.on{color:var(--tx);border-bottom-color:var(--acc)}
+  main{padding:14px;padding-bottom:80px;max-width:780px;margin:0 auto}
+  .card{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r2);padding:14px;margin-bottom:14px}
+  .card h2{margin:0 0 12px;font-size:16px;font-weight:700;color:var(--tx);display:flex;align-items:center;gap:8px}
+  .card h2::before{content:"";display:inline-block;width:4px;height:18px;background:var(--acc);border-radius:2px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .row1{display:grid;grid-template-columns:1fr;gap:10px}
+  label{display:block;font-size:13px;color:var(--tx2);font-weight:600;margin-bottom:6px}
+  input,select,textarea{width:100%;background:var(--bg3);border:1px solid var(--line);color:var(--tx);border-radius:var(--r);padding:12px 14px;font-size:16px;font-family:inherit;outline:none}
+  input:focus,select:focus{border-color:var(--acc)}
+  input[type="number"]{font-variant-numeric:tabular-nums}
+  .seg{display:flex;background:var(--bg3);border-radius:var(--r);padding:3px;gap:2px;border:1px solid var(--line)}
+  .seg button{flex:1;background:transparent;color:var(--tx2);border:0;padding:10px;font-size:13px;font-weight:700;border-radius:9px;cursor:pointer}
+  .seg button.on{background:var(--acc);color:#0b1410}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--acc);color:#0b1410;border:0;border-radius:var(--r);padding:14px 18px;font-size:16px;font-weight:800;cursor:pointer;width:100%}
+  .btn.sec{background:var(--bg3);color:var(--tx);border:1px solid var(--line)}
+  .btn.danger{background:var(--red);color:#fff}
+  .btn:active{transform:translateY(1px)}
+  .small{font-size:12px;color:var(--tx3);margin-top:4px}
+  .hint{font-size:12px;color:var(--tx3);margin-top:6px}
+  .kpi{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .kpi .b{background:var(--bg3);border:1px solid var(--line);border-radius:var(--r);padding:12px}
+  .kpi .b .l{font-size:11px;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+  .kpi .b .v{font-size:20px;font-weight:800;margin-top:4px;font-variant-numeric:tabular-nums}
+  .kpi .b .s{font-size:12px;color:var(--tx2);margin-top:2px}
+  .timeline{position:relative;background:var(--bg3);border-radius:var(--r);padding:8px;margin-top:6px}
+  .day{margin-bottom:14px}
+  .day:last-child{margin-bottom:0}
+  .day-title{font-size:13px;font-weight:800;color:var(--tx2);margin:6px 4px 8px;display:flex;justify-content:space-between}
+  .axis{position:relative;height:18px;border-bottom:1px solid var(--line);margin-bottom:4px}
+  .axis span{position:absolute;font-size:10px;color:var(--tx3);transform:translateX(-50%)}
+  .bar{position:relative;height:38px;background:#0a0d11;border-radius:8px;overflow:hidden;border:1px solid var(--line)}
+  .blk{position:absolute;top:0;height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#0b1410;overflow:hidden;border-right:1px solid rgba(0,0,0,.25)}
+  .blk.drive{background:var(--drive)}
+  .blk.brk{background:var(--brk)}
+  .blk.dailyr{background:var(--dailyr);color:#fff}
+  .blk.weeklyr{background:var(--weeklyr);color:#fff}
+  .blk.work{background:var(--work);color:#fff}
+  .blk.avail{background:var(--avail);color:#fff}
+  .legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;font-size:11px;color:var(--tx2)}
+  .legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:middle}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:8px 6px;text-align:left;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+  th{color:var(--tx3);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+  .pill{display:inline-block;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:800}
+  .pill.ok{background:rgba(34,197,94,.15);color:var(--acc)}
+  .pill.warn{background:rgba(245,158,11,.15);color:var(--warn)}
+  .pill.err{background:rgba(239,68,68,.15);color:var(--red)}
+  .pill.info{background:rgba(59,130,246,.15);color:var(--info)}
+  .alert{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.4);color:#fecaca;border-radius:var(--r);padding:12px;margin-bottom:10px;font-size:14px}
+  .alert.warn{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.4);color:#fde68a}
+  .alert.ok{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.4);color:#bbf7d0}
+  .stops{display:flex;flex-direction:column;gap:8px}
+  .stop{display:grid;grid-template-columns:1fr 1fr auto;gap:6px;align-items:center}
+  .stop button{background:var(--bg3);color:var(--red);border:1px solid var(--line);border-radius:8px;padding:10px 12px;cursor:pointer;font-weight:800}
+  details{background:var(--bg3);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;margin-bottom:8px}
+  details summary{cursor:pointer;font-weight:700;color:var(--tx);outline:none}
+  details[open] summary{margin-bottom:8px}
+  .fines li{margin:6px 0;font-size:13px;color:var(--tx2)}
+  .fines li b{color:var(--tx)}
+  .footer{text-align:center;color:var(--tx3);font-size:11px;padding:14px}
+  @media print{
+    header,nav,.no-print,.btn{display:none!important}
+    body{background:#fff;color:#000}
+    .card{background:#fff;border:1px solid #ccc;color:#000;box-shadow:none}
+    .bar{background:#fff;border:1px solid #999}
+  }
+  @media (max-width:380px){
+    .row{grid-template-columns:1fr}
+    .kpi{grid-template-columns:1fr 1fr}
+    main{padding:10px}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1><span>●</span> <span data-t="appName">Tacógrafo Pro</span> <span style="font-size:10px;color:var(--tx3);font-weight:400;margin-left:6px">v2026.02.20</span></h1>
+  <div class="lang" role="tablist">
+    <button id="lang-es" class="on" onclick="setLang('es')">ES</button>
+    <button id="lang-gl" onclick="setLang('gl')">GL</button>
+  </div>
+</header>
+<nav>
+  <button class="on" data-tab="plan" onclick="setTab('plan')" data-t="tabPlan">Planificador</button>
+  <button data-tab="status" onclick="setTab('status')" data-t="tabStatus">Estado</button>
+  <button data-tab="diary" onclick="setTab('diary')" data-t="tabDiary">Diario</button>
+  <button data-tab="help" onclick="setTab('help')" data-t="tabHelp">Normativa</button>
+</nav>
+
+<main>
+<!-- ===== TAB PLAN ===== -->
+<section id="tab-plan">
+
+<div class="card">
+  <h2 data-t="tripData">Datos del viaje</h2>
+  <div class="row1">
+    <div class="seg" id="modeSeg">
+      <button data-mode="arrive" class="on" onclick="setMode('arrive')" data-t="modeArrive">Llegar a una hora</button>
+      <button data-mode="depart" onclick="setMode('depart')" data-t="modeDepart">Salir ya / a una hora</button>
+    </div>
+  </div>
+  <div class="row" style="margin-top:10px">
+    <div>
+      <label data-t="km">Kilómetros totales</label>
+      <input id="km" type="number" inputmode="decimal" min="1" step="1" value="600" />
+    </div>
+    <div>
+      <label data-t="vavg">Velocidad media (km/h)</label>
+      <input id="vavg" type="number" inputmode="decimal" min="20" max="120" step="1" value="78" />
+      <div class="hint" id="vavgHint"></div>
+    </div>
+  </div>
+  <div class="row" style="margin-top:10px">
+    <div id="arriveWrap">
+      <label data-t="arriveAt">Hora llegada requerida</label>
+      <input id="arriveAt" type="datetime-local" />
+    </div>
+    <div id="departWrap" style="display:none">
+      <label data-t="departAt">Hora de salida</label>
+      <input id="departAt" type="datetime-local" />
+    </div>
+    <div>
+      <label data-t="safety">Margen seguridad (min)</label>
+      <input id="safety" type="number" inputmode="numeric" min="0" max="240" step="5" value="30" />
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 data-t="tachoState">Estado actual del tacógrafo</h2>
+  <div class="row">
+    <div>
+      <label data-t="drivenToday">Horas conducidas HOY</label>
+      <input id="drivenToday" type="number" inputmode="decimal" min="0" max="10" step="0.25" value="0" />
+    </div>
+    <div>
+      <label data-t="drivenWeek">Horas conducidas semana</label>
+      <input id="drivenWeek" type="number" inputmode="decimal" min="0" max="56" step="0.5" value="0" />
+    </div>
+  </div>
+  <div class="row" style="margin-top:10px">
+    <div>
+      <label data-t="drivenBiweek">Horas conducidas bisemanal</label>
+      <input id="drivenBiweek" type="number" inputmode="decimal" min="0" max="90" step="0.5" value="0" />
+    </div>
+    <div>
+      <label data-t="contSinceBreak">Min conducción continua sin pausa</label>
+      <input id="contSinceBreak" type="number" inputmode="numeric" min="0" max="270" step="5" value="0" />
+    </div>
+  </div>
+  <div class="row" style="margin-top:10px">
+    <div>
+      <label data-t="reducedDailyUsed">Descansos diarios reducidos (9h) ya usados (semana)</label>
+      <select id="reducedDailyUsed"><option>0</option><option>1</option><option>2</option><option>3</option></select>
+    </div>
+    <div>
+      <label data-t="extendedDailyUsed">Prolongaciones a 10h ya usadas (semana)</label>
+      <select id="extendedDailyUsed"><option>0</option><option>1</option><option>2</option></select>
+    </div>
+  </div>
+  <div class="row" style="margin-top:10px">
+    <div>
+      <label data-t="lastWeeklyRest">Fin último descanso semanal</label>
+      <input id="lastWeeklyRest" type="datetime-local" />
+    </div>
+    <div>
+      <label data-t="lastWeeklyType">Tipo último descanso semanal</label>
+      <select id="lastWeeklyType">
+        <option value="normal" data-t="wrNormal">Normal (45h)</option>
+        <option value="reduced" data-t="wrReduced">Reducido (24h) — compensar</option>
+      </select>
+    </div>
+  </div>
+  <div class="row1" style="margin-top:10px">
+    <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+      <input id="allowExt" type="checkbox" style="width:auto;transform:scale(1.4);margin:0 4px" />
+      <span data-t="allowExtLabel">Permitir prolongaciones a 10h sólo si son necesarias para llegar a tiempo</span>
+    </label>
+    <div class="hint" data-t="allowExtHint">Por defecto el motor planifica a 9h/día y no toca tus jokers. Activa esta opción si prefieres que use 10h cuando haga falta.</div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 data-t="prefs">Preferencias</h2>
+  <div class="row1">
+    <div>
+      <label data-t="dailyRest">Descanso diario preferido</label>
+      <div class="seg" id="restSeg">
+        <button data-rest="normal11" class="on" onclick="setRest('normal11')" data-t="restNormal">Normal 11h</button>
+        <button data-rest="reduced9" onclick="setRest('reduced9')" data-t="restReduced">Reducido 9h</button>
+        <button data-rest="split" onclick="setRest('split')" data-t="restSplit">Partido 3+9</button>
+      </div>
+    </div>
+  </div>
+  <div class="row1" style="margin-top:10px">
+    <div>
+      <label data-t="pauseFmt">Formato pausa 45 min</label>
+      <div class="seg" id="pauseSeg">
+        <button data-pause="full" class="on" onclick="setPause('full')" data-t="pauseFull">Junta 45'</button>
+        <button data-pause="split" onclick="setPause('split')" data-t="pauseSplit">Partida 15' + 30'</button>
+      </div>
+    </div>
+  </div>
+  <div class="row" style="margin-top:10px">
+    <div>
+      <label data-t="sleepFrom">Franja preferida para dormir desde</label>
+      <input id="sleepFrom" type="time" value="22:00" />
+    </div>
+    <div>
+      <label data-t="sleepTo">hasta</label>
+      <input id="sleepTo" type="time" value="06:00" />
+    </div>
+  </div>
+  <div class="hint" data-t="sleepHint">Se intentará empezar el descanso diario dentro de esta franja siempre que llegues a tiempo.</div>
+
+  <div style="margin-top:14px">
+    <label data-t="extraStops">Paradas extra (carga / descarga / espera)</label>
+    <div id="stopsList" class="stops"></div>
+    <button class="btn sec" onclick="addStop()" data-t="addStop" style="margin-top:8px">+ Añadir parada</button>
+    <div class="hint" data-t="stopsHint">"Otro trabajo" cuenta como jornada y rompe la conducción continua. "Disponibilidad" no rompe la pausa.</div>
+  </div>
+</div>
+
+<div class="row" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+  <button class="btn" onclick="calcular()" data-t="calc">Calcular planning</button>
+  <button class="btn sec" onclick="saveAsTrip()" data-t="saveTrip">Guardar viaje</button>
+</div>
+
+<div class="card" style="border-color:var(--acc)">
+  <h2 data-t="liveTitle">📍 Voy por aquí · Recalcular en ruta</h2>
+  <div class="row">
+    <div>
+      <label data-t="liveNow">Hora actual</label>
+      <input id="liveNow" type="datetime-local" />
+    </div>
+    <div>
+      <label data-t="liveKm">Km recorridos del viaje</label>
+      <input id="liveKm" type="number" inputmode="decimal" min="0" step="1" value="0" />
+    </div>
+  </div>
+  <div class="row" style="margin-top:10px">
+    <div>
+      <label data-t="liveCont">Min sin pausa ahora</label>
+      <input id="liveCont" type="number" inputmode="numeric" min="0" max="270" step="5" value="0" />
+    </div>
+    <div>
+      <label data-t="liveDriven">Horas ya conducidas hoy</label>
+      <input id="liveDriven" type="number" inputmode="decimal" min="0" max="10" step="0.25" value="0" />
+    </div>
+  </div>
+  <div class="row1" style="margin-top:10px">
+    <label data-t="liveExtraRest">Acabo de hacer un descanso/pausa extra de (min) — opcional</label>
+    <input id="liveExtraRest" type="number" inputmode="numeric" min="0" max="600" step="15" value="0" placeholder="0" />
+    <div class="hint" data-t="liveExtraHint">Si fue ≥45 min cuenta como pausa (resetea continua). Si fue ≥3h, el motor lo considera descanso adicional.</div>
+  </div>
+  <div class="row" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
+    <button class="btn" onclick="recalcLive()" data-t="liveRecalc">Recalcular el resto</button>
+    <button class="btn sec" onclick="resetLive()" data-t="liveReset">Volver al viaje original</button>
+  </div>
+</div>
+
+<div id="result"></div>
+
+</section>
+
+<!-- ===== TAB STATUS ===== -->
+<section id="tab-status" style="display:none">
+  <div class="card">
+    <h2 data-t="tachoLive">Estado tacógrafo en vivo</h2>
+    <div id="statusBox"></div>
+  </div>
+  <div class="card">
+    <h2 data-t="countersTitle">Contadores semana</h2>
+    <div id="countersBox"></div>
+  </div>
+</section>
+
+<!-- ===== TAB DIARY ===== -->
+<section id="tab-diary" style="display:none">
+  <div class="card">
+    <h2 data-t="diaryTitle">Diario de conducción</h2>
+    <div id="diaryList"></div>
+    <div class="hint" data-t="diaryHint" style="margin-top:10px">Al cerrar un viaje con la hora real de llegada, la app aprenderá tu velocidad media efectiva por tipo de carga y ruta.</div>
+  </div>
+  <div class="card">
+    <h2 data-t="learnedTitle">Velocidad media aprendida</h2>
+    <div id="learnedBox"></div>
+  </div>
+</section>
+
+<!-- ===== TAB HELP ===== -->
+<section id="tab-help" style="display:none">
+  <div class="card">
+    <h2 data-t="helpTitle">Resumen Reglamento CE 561/2006</h2>
+    <details open><summary data-t="hDaily">Conducción diaria</summary>
+      <div data-t="hDailyBody">Máx 9h. Ampliable a 10h máximo 2 veces por semana.</div></details>
+    <details><summary data-t="hCont">Conducción continua</summary>
+      <div data-t="hContBody">Máx 4h30' sin interrupción. Pausa de 45 min (o 15' + 30').</div></details>
+    <details><summary data-t="hWeekly">Conducción semanal y bisemanal</summary>
+      <div data-t="hWeeklyBody">Máx 56h semana. Máx 90h en 2 semanas consecutivas.</div></details>
+    <details><summary data-t="hDailyR">Descanso diario</summary>
+      <div data-t="hDailyRBody">Normal: 11h continuas. Reducido: 9h (máx 3 veces entre semanales). Partido: 3h + 9h = cuenta como normal.</div></details>
+    <details><summary data-t="hWeeklyR">Descanso semanal</summary>
+      <div data-t="hWeeklyRBody">Normal 45h. Reducido 24h (a compensar en 3 semanas). En 2 semanas consecutivas al menos uno debe ser de 45h.</div></details>
+  </div>
+  <div class="card">
+    <h2 data-t="finesTitle">Cuantías orientativas de multas (RD 818/2009 / LOTT España)</h2>
+    <ul class="fines" id="finesList"></ul>
+    <div class="hint" data-t="finesHint">Cantidades orientativas. La cuantía final depende de circunstancias y reincidencia.</div>
+  </div>
+</section>
+
+<div class="footer" data-t="footer">Tacógrafo Pro · CE 561/2006 · Hecho para conductores</div>
+</main>
+
+<script>
+/* =========================================================
+   I18N (ES / GL)
+   ========================================================= */
+const I18N = {
+  es:{
+    appName:"Tacógrafo Pro", tabPlan:"Planificador", tabStatus:"Estado", tabDiary:"Diario", tabHelp:"Normativa",
+    tripData:"Datos del viaje", modeArrive:"Llegar a una hora", modeDepart:"Salir a una hora",
+    km:"Kilómetros totales", vavg:"Velocidad media (km/h)", arriveAt:"Hora llegada requerida", departAt:"Hora de salida",
+    safety:"Margen seguridad (min)", tachoState:"Estado actual del tacógrafo",
+    drivenToday:"Horas conducidas HOY", drivenWeek:"Horas conducidas semana",
+    drivenBiweek:"Horas conducidas bisemanal", contSinceBreak:"Min conducción continua sin pausa",
+    reducedDailyUsed:"Descansos diarios reducidos (9h) ya usados", extendedDailyUsed:"Prolongaciones a 10h ya usadas",
+    lastWeeklyRest:"Fin último descanso semanal", lastWeeklyType:"Tipo último descanso semanal",
+    wrNormal:"Normal (45h)", wrReduced:"Reducido (24h) — compensar",
+    prefs:"Preferencias", dailyRest:"Descanso diario preferido",
+    restNormal:"Normal 11h", restReduced:"Reducido 9h", restSplit:"Partido 3+9",
+    pauseFmt:"Formato pausa 45 min", pauseFull:"Junta 45'", pauseSplit:"Partida 15' + 30'",
+    sleepFrom:"Franja preferida para dormir desde", sleepTo:"hasta",
+    sleepHint:"Se intentará empezar el descanso diario dentro de esta franja siempre que llegues a tiempo.",
+    extraStops:"Paradas extra (carga / descarga / espera)", addStop:"+ Añadir parada",
+    stopsHint:'"Otro trabajo" cuenta como jornada y rompe la conducción continua. "Disponibilidad" no rompe la pausa.',
+    calc:"Calcular planning", saveTrip:"Guardar viaje",
+    tachoLive:"Estado tacógrafo en vivo", countersTitle:"Contadores semana",
+    diaryTitle:"Diario de conducción", diaryHint:"Al cerrar un viaje con la hora real de llegada, la app aprenderá tu velocidad media efectiva por tipo de carga y ruta.",
+    learnedTitle:"Velocidad media aprendida",
+    helpTitle:"Resumen Reglamento CE 561/2006",
+    hDaily:"Conducción diaria", hDailyBody:"Máx 9h. Ampliable a 10h máximo 2 veces por semana.",
+    hCont:"Conducción continua", hContBody:"Máx 4h30' sin interrupción. Pausa de 45 min (o 15' + 30').",
+    hWeekly:"Conducción semanal y bisemanal", hWeeklyBody:"Máx 56h semana. Máx 90h en 2 semanas consecutivas.",
+    hDailyR:"Descanso diario", hDailyRBody:"Normal: 11h continuas. Reducido: 9h (máx 3 veces entre semanales). Partido: 3h + 9h.",
+    hWeeklyR:"Descanso semanal", hWeeklyRBody:"Normal 45h. Reducido 24h (compensar en 3 semanas).",
+    finesTitle:"Cuantías orientativas de multas (España)",
+    finesHint:"Cantidades orientativas según RD 818/2009 / LOTT. Pueden variar.",
+    footer:"Tacógrafo Pro · CE 561/2006 · Hecho para conductores",
+    drive:"Conducción", brk:"Pausa", dailyr:"Descanso diario", weeklyr:"Descanso semanal", work:"Otro trabajo", avail:"Disponibilidad",
+    sumDepart:"Hora salida necesaria", sumArrive:"Hora llegada estimada",
+    sumDrive:"Horas conducción", sumRest:"Horas descanso", sumStops:"Nº paradas", sumDays:"Días totales",
+    impossible:"Misión imposible con la normativa: ", arriveBefore:"Necesitas salir antes de",
+    ok:"Planning factible respetando la normativa.",
+    legend:"Leyenda", day:"Día",
+    saved:"Guardado", saveOK:"Viaje guardado en el diario.",
+    closeTrip:"Cerrar con hora real", closed:"Cerrado", noTrips:"Sin viajes aún.",
+    delete:"Borrar",  closedAt:"Llegada real", realSpeed:"Vel. real",
+    noLearned:"Aún no hay histórico para aprender. Cierra viajes para empezar.",
+    label:"Etiqueta", loadType:"Carga", routeType:"Ruta", weather:"Clima",
+    loadEmpty:"Vacío", loadHalf:"Medio", loadFull:"Cargado", loadMMA:"MMA",
+    routeAuto:"Autopista", routeNat:"Nacional", routeMt:"Montaña", routeMix:"Mixto",
+    wDry:"Seco", wRain:"Lluvia", wSnow:"Nieve",
+    stopWork:"Otro trabajo", stopAvail:"Disponibilidad",
+    stopMin:"Duración (min)",
+    minutes:"min", hours:"h",
+    nextBreak:"Próxima pausa obligatoria", nextDailyRest:"Próximo descanso diario", weeklyDrive:"Conducción semanal",
+    biweekDrive:"Conducción bisemanal", weeklyRestStatus:"Estado descanso semanal", reducedLeft:"Reducidos disponibles", extLeft:"Prolongaciones disponibles",
+    compPending:"Compensación pendiente del último reducido", noComp:"Sin compensación pendiente",
+    weeklyRestDue:"Descanso semanal exigible antes de",
+    infractions:"Posibles infracciones detectadas",
+    vavgHint:"90 km/h por defecto. Si vas cargado o montaña, baja la velocidad.",
+    sleepBlocked:"Descanso forzado dentro de tu franja de sueño.",
+    print:"Imprimir / Exportar",
+    allowExtLabel:"Permitir prolongaciones a 10h sólo si son necesarias para llegar a tiempo",
+    allowExtHint:"Por defecto el motor planifica a 9h/día y no toca tus jokers. Activa esta opción si prefieres que use 10h cuando haga falta.",
+    liveTitle:"📍 Voy por aquí · Recalcular en ruta",
+    liveNow:"Hora actual", liveKm:"Km recorridos del viaje", liveCont:"Min sin pausa ahora",
+    liveDriven:"Horas ya conducidas hoy", liveExtraRest:"Acabo de hacer un descanso/pausa extra de (min) — opcional",
+    liveExtraHint:"Si fue ≥45 min cuenta como pausa (resetea continua). Si fue ≥3h, el motor lo considera descanso adicional.",
+    liveRecalc:"Recalcular el resto", liveReset:"Volver al viaje original"
+  },
+  gl:{
+    appName:"Tacógrafo Pro", tabPlan:"Planificador", tabStatus:"Estado", tabDiary:"Diario", tabHelp:"Normativa",
+    tripData:"Datos da viaxe", modeArrive:"Chegar a unha hora", modeDepart:"Saír a unha hora",
+    km:"Quilómetros totais", vavg:"Velocidade media (km/h)", arriveAt:"Hora chegada requirida", departAt:"Hora de saída",
+    safety:"Marxe seguridade (min)", tachoState:"Estado actual do tacógrafo",
+    drivenToday:"Horas conducidas HOXE", drivenWeek:"Horas conducidas semana",
+    drivenBiweek:"Horas conducidas bisemanal", contSinceBreak:"Min condución continua sen pausa",
+    reducedDailyUsed:"Descansos diarios reducidos (9h) xa usados", extendedDailyUsed:"Prolongacións a 10h xa usadas",
+    lastWeeklyRest:"Fin último descanso semanal", lastWeeklyType:"Tipo último descanso semanal",
+    wrNormal:"Normal (45h)", wrReduced:"Reducido (24h) — compensar",
+    prefs:"Preferencias", dailyRest:"Descanso diario preferido",
+    restNormal:"Normal 11h", restReduced:"Reducido 9h", restSplit:"Partido 3+9",
+    pauseFmt:"Formato pausa 45 min", pauseFull:"Xunta 45'", pauseSplit:"Partida 15' + 30'",
+    sleepFrom:"Franxa preferida para durmir dende", sleepTo:"ata",
+    sleepHint:"Intentarase comezar o descanso diario dentro desta franxa sempre que chegues a tempo.",
+    extraStops:"Paradas extra (carga / descarga / espera)", addStop:"+ Engadir parada",
+    stopsHint:'"Outro traballo" conta como xornada e rompe a condución continua. "Dispoñibilidade" non rompe a pausa.',
+    calc:"Calcular planning", saveTrip:"Gardar viaxe",
+    tachoLive:"Estado tacógrafo en vivo", countersTitle:"Contadores semana",
+    diaryTitle:"Diario de condución", diaryHint:"Ao pechar unha viaxe coa hora real de chegada, a app aprenderá a túa velocidade media efectiva por tipo de carga e ruta.",
+    learnedTitle:"Velocidade media aprendida",
+    helpTitle:"Resumo Regulamento CE 561/2006",
+    hDaily:"Condución diaria", hDailyBody:"Máx 9h. Ampliable a 10h máximo 2 veces por semana.",
+    hCont:"Condución continua", hContBody:"Máx 4h30' sen interrupción. Pausa de 45 min (ou 15' + 30').",
+    hWeekly:"Condución semanal e bisemanal", hWeeklyBody:"Máx 56h semana. Máx 90h en 2 semanas consecutivas.",
+    hDailyR:"Descanso diario", hDailyRBody:"Normal: 11h continuas. Reducido: 9h (máx 3 veces entre semanais). Partido: 3h + 9h.",
+    hWeeklyR:"Descanso semanal", hWeeklyRBody:"Normal 45h. Reducido 24h (compensar en 3 semanas).",
+    finesTitle:"Contías orientativas de multas (España)",
+    finesHint:"Cantidades orientativas segundo RD 818/2009 / LOTT.",
+    footer:"Tacógrafo Pro · CE 561/2006 · Feito para condutores",
+    drive:"Condución", brk:"Pausa", dailyr:"Descanso diario", weeklyr:"Descanso semanal", work:"Outro traballo", avail:"Dispoñibilidade",
+    sumDepart:"Hora saída necesaria", sumArrive:"Hora chegada estimada",
+    sumDrive:"Horas condución", sumRest:"Horas descanso", sumStops:"Nº paradas", sumDays:"Días totais",
+    impossible:"Misión imposible coa normativa: ", arriveBefore:"Tes que saír antes de",
+    ok:"Planning factible respectando a normativa.",
+    legend:"Lenda", day:"Día",
+    saved:"Gardado", saveOK:"Viaxe gardada no diario.",
+    closeTrip:"Pechar con hora real", closed:"Pechado", noTrips:"Sen viaxes aínda.",
+    delete:"Borrar", closedAt:"Chegada real", realSpeed:"Vel. real",
+    noLearned:"Aínda non hai histórico para aprender. Pecha viaxes para comezar.",
+    label:"Etiqueta", loadType:"Carga", routeType:"Ruta", weather:"Clima",
+    loadEmpty:"Baleiro", loadHalf:"Medio", loadFull:"Cargado", loadMMA:"MMA",
+    routeAuto:"Autoestrada", routeNat:"Nacional", routeMt:"Montaña", routeMix:"Mixto",
+    wDry:"Seco", wRain:"Chuvia", wSnow:"Neve",
+    stopWork:"Outro traballo", stopAvail:"Dispoñibilidade",
+    stopMin:"Duración (min)",
+    minutes:"min", hours:"h",
+    nextBreak:"Próxima pausa obrigatoria", nextDailyRest:"Próximo descanso diario", weeklyDrive:"Condución semanal",
+    biweekDrive:"Condución bisemanal", weeklyRestStatus:"Estado descanso semanal", reducedLeft:"Reducidos dispoñibles", extLeft:"Prolongacións dispoñibles",
+    compPending:"Compensación pendente do último reducido", noComp:"Sen compensación pendente",
+    weeklyRestDue:"Descanso semanal esixible antes de",
+    infractions:"Posibles infraccións detectadas",
+    vavgHint:"90 km/h por defecto. Se vas cargado ou montaña, baixa a velocidade.",
+    sleepBlocked:"Descanso forzado dentro da túa franxa de sono.",
+    print:"Imprimir / Exportar",
+    allowExtLabel:"Permitir prolongacións a 10h só se son necesarias para chegar a tempo",
+    allowExtHint:"Por defecto o motor planifica a 9h/día e non toca os teus jokers. Activa esta opción se prefires que use 10h cando faga falta.",
+    liveTitle:"📍 Vou por aquí · Recalcular en ruta",
+    liveNow:"Hora actual", liveKm:"Km percorridos da viaxe", liveCont:"Min sen pausa agora",
+    liveDriven:"Horas xa conducidas hoxe", liveExtraRest:"Acabo de facer un descanso/pausa extra de (min) — opcional",
+    liveExtraHint:"Se foi ≥45 min conta como pausa (reset continua). Se foi ≥3h, considérase descanso adicional.",
+    liveRecalc:"Recalcular o resto", liveReset:"Volver á viaxe orixinal"
+  }
+};
+let LANG = localStorage.getItem("tp_lang") || "es";
+function t(k){ return (I18N[LANG] && I18N[LANG][k]) || I18N.es[k] || k; }
+function applyI18N(){
+  document.documentElement.lang = LANG;
+  document.querySelectorAll("[data-t]").forEach(el=>{
+    const k = el.getAttribute("data-t");
+    const v = I18N[LANG][k];
+    if(v!=null) el.textContent = v;
+  });
+  document.getElementById("lang-es").classList.toggle("on", LANG==="es");
+  document.getElementById("lang-gl").classList.toggle("on", LANG==="gl");
+  document.getElementById("vavgHint").textContent = t("vavgHint");
+  renderFines();
+  if(document.getElementById("tab-diary").style.display!=="none") renderDiary();
+  if(document.getElementById("tab-status").style.display!=="none") renderStatus();
+}
+function setLang(l){ LANG=l; localStorage.setItem("tp_lang",l); applyI18N(); }
+
+/* =========================================================
+   TABS
+   ========================================================= */
+function setTab(name){
+  ["plan","status","diary","help"].forEach(n=>{
+    document.getElementById("tab-"+n).style.display = (n===name?"block":"none");
+  });
+  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on", b.dataset.tab===name));
+  if(name==="status") renderStatus();
+  if(name==="diary") renderDiary();
+}
+
+/* =========================================================
+   FORM STATE
+   ========================================================= */
+let MODE = "arrive";
+let REST = "normal11";
+let PAUSE = "full";
+
+function setMode(m){
+  MODE=m;
+  document.querySelectorAll('#modeSeg button').forEach(b=>b.classList.toggle('on', b.dataset.mode===m));
+  document.getElementById("arriveWrap").style.display = (m==="arrive"?"block":"none");
+  document.getElementById("departWrap").style.display = (m==="depart"?"block":"none");
+}
+function setRest(r){ REST=r; document.querySelectorAll('#restSeg button').forEach(b=>b.classList.toggle('on', b.dataset.rest===r)); }
+function setPause(p){ PAUSE=p; document.querySelectorAll('#pauseSeg button').forEach(b=>b.classList.toggle('on', b.dataset.pause===p)); }
+
+/* =========================================================
+   EXTRA STOPS
+   ========================================================= */
+let STOPS = [];
+function addStop(){
+  STOPS.push({type:"work", durationMin:30});
+  renderStops();
+}
+function renderStops(){
+  const c = document.getElementById("stopsList");
+  c.innerHTML = "";
+  STOPS.forEach((s,i)=>{
+    const row = document.createElement("div");
+    row.className="stop";
+    row.innerHTML = `
+      <select onchange="STOPS[${i}].type=this.value">
+        <option value="work" ${s.type==='work'?'selected':''}>${t('stopWork')}</option>
+        <option value="avail" ${s.type==='avail'?'selected':''}>${t('stopAvail')}</option>
+      </select>
+      <input type="number" min="5" max="600" step="5" value="${s.durationMin}" placeholder="${t('stopMin')}" oninput="STOPS[${i}].durationMin=parseInt(this.value)||0" />
+      <button onclick="STOPS.splice(${i},1);renderStops()">✕</button>`;
+    c.appendChild(row);
+  });
+}
+
+/* =========================================================
+   LIVE RECALC (en ruta)
+   ========================================================= */
+let ORIGINAL_TRIP = null;
+function snapshotOriginal(){
+  if(!ORIGINAL_TRIP){
+    ORIGINAL_TRIP = readForm();
+  }
+}
+function recalcLive(){
+  snapshotOriginal();
+  const totalKm = ORIGINAL_TRIP.km;
+  const kmDone = parseFloat(document.getElementById("liveKm").value)||0;
+  const remaining = Math.max(0, totalKm - kmDone);
+  const now = document.getElementById("liveNow").value;
+  const cont = parseInt(document.getElementById("liveCont").value)||0;
+  const driven = parseFloat(document.getElementById("liveDriven").value)||0;
+  const extraMin = parseInt(document.getElementById("liveExtraRest").value)||0;
+
+  let departTs = now ? new Date(now).getTime() : Date.now();
+  let effectiveCont = cont;
+  if(extraMin >= 45){ effectiveCont = 0; } // ≥45min resetea continua
+  if(extraMin > 0){ departTs += extraMin*60*1000; } // si llevas X min de descanso/pausa, partimos cuando acabe
+
+  // Set form to depart mode with the live data
+  setMode("depart");
+  document.getElementById("km").value = remaining;
+  const iso = new Date(departTs - new Date(departTs).getTimezoneOffset()*60000).toISOString().slice(0,16);
+  document.getElementById("departAt").value = iso;
+  document.getElementById("contSinceBreak").value = effectiveCont;
+  document.getElementById("drivenToday").value = driven;
+  calcular();
+}
+function resetLive(){
+  if(!ORIGINAL_TRIP) return;
+  writeForm(ORIGINAL_TRIP);
+  ORIGINAL_TRIP = null;
+  document.getElementById("result").innerHTML = "";
+  document.getElementById("liveKm").value = 0;
+  document.getElementById("liveCont").value = 0;
+  document.getElementById("liveDriven").value = 0;
+  document.getElementById("liveExtraRest").value = 0;
+}
+
+/* =========================================================
+   PERSISTENCE
+   ========================================================= */
+const LS_LAST = "tp_last_input";
+const LS_TRIPS = "tp_trips";
+
+function readForm(){
+  return {
+    mode:MODE,
+    km: parseFloat(document.getElementById("km").value)||0,
+    vavg: parseFloat(document.getElementById("vavg").value)||78,
+    arriveAt: document.getElementById("arriveAt").value,
+    departAt: document.getElementById("departAt").value,
+    safety: parseInt(document.getElementById("safety").value)||0,
+    drivenToday: parseFloat(document.getElementById("drivenToday").value)||0,
+    drivenWeek: parseFloat(document.getElementById("drivenWeek").value)||0,
+    drivenBiweek: parseFloat(document.getElementById("drivenBiweek").value)||0,
+    contSinceBreak: parseInt(document.getElementById("contSinceBreak").value)||0,
+    reducedDailyUsed: parseInt(document.getElementById("reducedDailyUsed").value)||0,
+    extendedDailyUsed: parseInt(document.getElementById("extendedDailyUsed").value)||0,
+    lastWeeklyRest: document.getElementById("lastWeeklyRest").value,
+    lastWeeklyType: document.getElementById("lastWeeklyType").value,
+    allowExt: document.getElementById("allowExt").checked,
+    rest: REST, pause: PAUSE,
+    sleepFrom: document.getElementById("sleepFrom").value,
+    sleepTo: document.getElementById("sleepTo").value,
+    stops: STOPS.slice()
+  };
+}
+function writeForm(d){
+  if(!d) return;
+  setMode(d.mode||"arrive");
+  document.getElementById("km").value = d.km ?? 600;
+  document.getElementById("vavg").value = d.vavg ?? 78;
+  if(d.arriveAt) document.getElementById("arriveAt").value = d.arriveAt;
+  if(d.departAt) document.getElementById("departAt").value = d.departAt;
+  document.getElementById("safety").value = d.safety ?? 30;
+  document.getElementById("drivenToday").value = d.drivenToday ?? 0;
+  document.getElementById("drivenWeek").value = d.drivenWeek ?? 0;
+  document.getElementById("drivenBiweek").value = d.drivenBiweek ?? 0;
+  document.getElementById("contSinceBreak").value = d.contSinceBreak ?? 0;
+  document.getElementById("reducedDailyUsed").value = d.reducedDailyUsed ?? 0;
+  document.getElementById("extendedDailyUsed").value = d.extendedDailyUsed ?? 0;
+  if(d.lastWeeklyRest) document.getElementById("lastWeeklyRest").value = d.lastWeeklyRest;
+  if(d.lastWeeklyType) document.getElementById("lastWeeklyType").value = d.lastWeeklyType;
+  document.getElementById("allowExt").checked = !!d.allowExt;
+  setRest(d.rest||"normal11");
+  setPause(d.pause||"full");
+  document.getElementById("sleepFrom").value = d.sleepFrom||"22:00";
+  document.getElementById("sleepTo").value = d.sleepTo||"06:00";
+  STOPS = (d.stops||[]).slice();
+  renderStops();
+}
+function saveLast(){ localStorage.setItem(LS_LAST, JSON.stringify(readForm())); }
+function loadLast(){
+  try{ writeForm(JSON.parse(localStorage.getItem(LS_LAST))); }catch(e){}
+}
+
+/* =========================================================
+   PLANNING ENGINE (CE 561/2006)
+   ========================================================= */
+const MIN=60*1000, H=60*MIN;
+
+function parseDT(s){
+  if(!s) return null;
+  return new Date(s).getTime();
+}
+function fmtDT(ms){
+  const d=new Date(ms);
+  return d.toLocaleString(LANG==="gl"?"gl-ES":"es-ES",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});
+}
+function fmtT(ms){
+  const d=new Date(ms);
+  return d.toLocaleString(LANG==="gl"?"gl-ES":"es-ES",{hour:"2-digit",minute:"2-digit"});
+}
+function fmtDate(ms){
+  const d=new Date(ms);
+  return d.toLocaleString(LANG==="gl"?"gl-ES":"es-ES",{weekday:"short",day:"2-digit",month:"2-digit"});
+}
+function fmtHours(h){
+  const sign = h<0?"-":""; h=Math.abs(h);
+  const hh = Math.floor(h);
+  const mm = Math.round((h-hh)*60);
+  return sign+hh+"h "+String(mm).padStart(2,"0")+"'";
+}
+function timeInWindow(ms, fromHM, toHM){
+  const d=new Date(ms);
+  const cur = d.getHours()*60 + d.getMinutes();
+  const [fh,fm] = fromHM.split(":").map(Number);
+  const [th,tm] = toHM.split(":").map(Number);
+  const f = fh*60+fm, t = th*60+tm;
+  if(f===t) return false;
+  if(f<t) return cur>=f && cur<t;
+  return cur>=f || cur<t;
+}
+function nextWindowStart(ms, fromHM, toHM){
+  // next occurrence (>= ms) of fromHM
+  const [fh,fm] = fromHM.split(":").map(Number);
+  const d = new Date(ms);
+  const c = new Date(d.getFullYear(),d.getMonth(),d.getDate(),fh,fm,0,0).getTime();
+  if(c >= ms) return c;
+  return c + 24*H;
+}
+
+function simulate(input, startMs){
+  const blocks = [];
+  let t = startMs;
+  let remainingDrive = (input.km / input.vavg) * H;
+  let driveSinceBreak = input.contSinceBreak * MIN;
+  let splitDone = 0;          // pausa 15+30 partida
+  let splitFirstDone = false; // primer tramo 3h del split 3+9 ya hecho hoy
+  let drivenToday = input.drivenToday * H;
+  let drivenWeek = input.drivenWeek * H;
+  let drivenBiweek = input.drivenBiweek * H;
+  let reducedLeft = 3 - input.reducedDailyUsed;
+  let extLeft = 2 - input.extendedDailyUsed;
+  let stopsToInsert = input.stops.slice();
+  let dayExtended = drivenToday > 9*H;
+  let restCount = 0;          // nº de descansos diarios completados en este planning
+  let lastRestWasReduced = false;
+
+  function pushDrive(dur){
+    if(dur<=0) return;
+    blocks.push({type:"drive", start:t, end:t+dur});
+    t += dur; remainingDrive -= dur;
+    driveSinceBreak += dur;
+    drivenToday += dur; drivenWeek += dur; drivenBiweek += dur;
+    if(drivenToday > 9*H && !dayExtended){ dayExtended = true; }
+  }
+  function pushBlock(type, dur, meta){
+    blocks.push({type, start:t, end:t+dur, ...(meta||{})});
+    t += dur;
+  }
+
+  let guard = 0;
+  while(remainingDrive > 1000){
+    guard++;
+    if(guard>2000) break;
+
+    const limCont = Math.max(0, 4.5*H - driveSinceBreak);
+    let limDaily = Math.max(0, 9*H - drivenToday);
+    let usingExtension = false;
+    if(limDaily<=0 && input.allowExt && extLeft>0 && remainingDrive > 0){
+      limDaily = Math.max(0, 10*H - drivenToday);
+      usingExtension = true;
+    }
+    const limWeek = Math.max(0, 56*H - drivenWeek);
+    const limBiweek = Math.max(0, 90*H - drivenBiweek);
+
+    // Sleep window
+    const sleepStart = nextWindowStart(t, input.sleepFrom, input.sleepTo);
+    const isInSleep = timeInWindow(t, input.sleepFrom, input.sleepTo);
+    let alignToSleep = false;
+    let forceRestNow = false;
+    if(input.sleepFrom !== input.sleepTo && drivenToday >= 4*H && remainingDrive > 0){
+      if(isInSleep){
+        forceRestNow = true;
+      } else {
+        const dt = sleepStart - t;
+        if(dt > 0 && dt < 3*H && dt < limDaily){
+          alignToSleep = true;
+        }
+      }
+    }
+
+    let chunk = Math.min(remainingDrive, limCont, limDaily, limWeek, limBiweek);
+    let stopAfter = null;
+
+    // Determine which limit is binding (the smallest one besides remainingDrive)
+    const limits = [
+      {name:"cont", val: limCont},
+      {name:"daily", val: limDaily},
+      {name:"week", val: limWeek},
+      {name:"biweek", val: limBiweek}
+    ];
+    let bindingLimit = limits.reduce((a,b)=> a.val <= b.val ? a : b);
+
+    if(forceRestNow){
+      chunk = 0;
+      stopAfter = "dailyRest";
+    } else if(alignToSleep){
+      chunk = Math.min(chunk, sleepStart - t);
+      stopAfter = "dailyRest";
+    } else if(chunk >= remainingDrive){
+      stopAfter = "done";
+    } else if(bindingLimit.name === "cont"){
+      stopAfter = "break";
+    } else if(bindingLimit.name === "daily"){
+      stopAfter = "dailyRest";
+    } else if(bindingLimit.name === "week" || bindingLimit.name === "biweek"){
+      stopAfter = "weeklyRest";
+    }
+
+    pushDrive(chunk);
+    if(stopAfter === "done") break;
+
+    // Promote "break" to "dailyRest" if the rest is imminent anyway:
+    // (a) we'd enter the sleep window during/after the 45' pause, or
+    // (b) we are within ~1h of the daily driving limit.
+    // In those cases the 45' pause is absorbed by the 11h+ daily rest legally
+    // and there is no point in scheduling it separately.
+    if(stopAfter === "break" && drivenToday >= 4*H && input.sleepFrom !== input.sleepTo){
+      const postBreakT = t + 45*MIN;
+      const willBeInSleep = timeInWindow(t, input.sleepFrom, input.sleepTo) || timeInWindow(postBreakT, input.sleepFrom, input.sleepTo);
+      const dailyLimitTight = (9*H - drivenToday) < 1*H;
+      if(willBeInSleep || dailyLimitTight){
+        stopAfter = "dailyRest";
+      }
+    }
+
+    if(stopAfter === "break"){
+      // Split 3+9: if user wants split daily rest AND haven't done the 3h yet today AND
+      // we still have driving time left in the day → take 3h instead of 45'. This counts as pausa
+      // and as first part of split daily rest.
+      if(input.rest === "split" && !splitFirstDone && remainingDrive > limDaily){
+        pushBlock("dailyr", 3*H, {label:"3h (split)", restKind:"splitFirst"});
+        splitFirstDone = true;
+        driveSinceBreak = 0;
+        continue;
+      }
+      if(input.pause === "split"){
+        if(splitDone===0){
+          pushBlock("brk", 15*MIN, {label:"15'"});
+          splitDone = 1;
+        }else{
+          pushBlock("brk", 30*MIN, {label:"30'"});
+          splitDone = 0;
+          driveSinceBreak = 0;
+        }
+      } else {
+        pushBlock("brk", 45*MIN, {label:"45'"});
+        driveSinceBreak = 0;
+      }
+      continue;
+    }
+
+    if(stopAfter === "dailyRest"){
+      while(stopsToInsert.length>0){
+        const s = stopsToInsert.shift();
+        pushBlock(s.type==="work"?"work":"avail", s.durationMin*MIN);
+        if(s.type==="work" && s.durationMin>=45) driveSinceBreak = 0;
+      }
+      if(dayExtended && extLeft>0){ extLeft--; }
+
+      // Decide rest duration & type
+      let rdur, restKind, restLabel;
+      if(input.rest === "split" && splitFirstDone){
+        // second part of 3+9
+        rdur = 9*H;
+        restKind = "splitSecond";
+        restLabel = "9h (split 3+9)";
+        splitFirstDone = false;
+      } else if(input.rest === "split"){
+        // user wanted split but didn't manage the 3h part → fallback 11h
+        rdur = 11*H;
+        restKind = "normal";
+        restLabel = "11h";
+      } else if(input.rest === "reduced9"){
+        // Prefer 11h on rest #0, alternate from there, never two reduced in a row,
+        // and only use reduced if reducedLeft>0.
+        const canReduce = (reducedLeft > 0) && !lastRestWasReduced && (restCount % 2 === 1);
+        if(canReduce){
+          rdur = 9*H; restKind = "reduced"; restLabel = "9h ↓";
+          reducedLeft--;
+          lastRestWasReduced = true;
+        } else {
+          rdur = 11*H; restKind = "normal"; restLabel = "11h";
+          lastRestWasReduced = false;
+        }
+      } else {
+        rdur = 11*H; restKind = "normal"; restLabel = "11h";
+        lastRestWasReduced = false;
+      }
+
+      // Weekly rest trigger
+      const lastW = parseDT(input.lastWeeklyRest) || (startMs - 6*24*H);
+      const sinceWeekly = (t + rdur) - lastW;
+      const needWeekly = (drivenWeek >= 45*H) || (sinceWeekly >= 6*24*H);
+      if(needWeekly){
+        let wdur = 45*H, wkind = "normal";
+        if(input.lastWeeklyType==="normal" && restCount > 0){
+          wdur = 24*H; wkind = "reduced";
+        }
+        pushBlock("weeklyr", wdur, {restKind:wkind, label: wkind==="reduced"?"24h ↓":"45h"});
+        drivenWeek = 0;
+        drivenBiweek = Math.max(0, drivenBiweek - 56*H);
+        lastRestWasReduced = false;
+      } else {
+        pushBlock("dailyr", rdur, {restKind, label:restLabel});
+      }
+      drivenToday = 0;
+      driveSinceBreak = 0;
+      dayExtended = false;
+      restCount++;
+      continue;
+    }
+
+    if(stopAfter === "weeklyRest"){
+      pushBlock("weeklyr", 45*H, {restKind:"normal", label:"45h"});
+      drivenWeek = 0;
+      drivenBiweek = Math.max(0, drivenBiweek - 56*H);
+      drivenToday = 0;
+      driveSinceBreak = 0;
+      dayExtended = false;
+      restCount++;
+      lastRestWasReduced = false;
+      continue;
+    }
+  }
+
+  const arrival = t;
+  const totalDrive = blocks.filter(b=>b.type==="drive").reduce((a,b)=>a+(b.end-b.start),0);
+  const totalRest = blocks.filter(b=>b.type==="dailyr"||b.type==="weeklyr"||b.type==="brk").reduce((a,b)=>a+(b.end-b.start),0);
+  const numStops = blocks.filter(b=>b.type!=="drive").length;
+
+  return {
+    blocks, arrival, totalDrive, totalRest, numStops,
+    reducedLeft, extLeft, drivenWeek, drivenBiweek
+  };
+}
+
+/* Resolve start time from arrival target by iterative simulation */
+function planFromArrival(input, arrivalTarget){
+  // 1) First estimate elapsed using simple ratio
+  const driveSec = (input.km/input.vavg)*3600;
+  let estElapsed = driveSec*1000;
+  if(driveSec > 9*3600){
+    const days = Math.ceil(driveSec/(9*3600));
+    estElapsed += (days-1) * 11*H;
+  }
+  estElapsed += Math.floor(driveSec/(4.5*3600)) * 45*MIN;
+  let start = arrivalTarget - estElapsed;
+  let result = simulate(input, start);
+  for(let i=0;i<15;i++){
+    const delta = arrivalTarget - result.arrival;
+    if(Math.abs(delta) < 60*1000) break;
+    start = start + delta;
+    result = simulate(input, start);
+  }
+  // Always end with a final simulate so result matches the returned start
+  result = simulate(input, start);
+  return {start, ...result};
+}
+
+/* =========================================================
+   INFRACTIONS DETECTION
+   ========================================================= */
+function detectInfractions(input, plan){
+  const issues = [];
+  let cont = (input.contSinceBreak||0)*MIN;
+  let dToday = (input.drivenToday||0)*H;
+  let extensionsUsed = input.extendedDailyUsed || 0; // contador desde último descanso semanal
+  let dayHadExtension = dToday > 9*H;
+  for(const b of plan.blocks){
+    if(b.type==="drive"){
+      cont += (b.end-b.start);
+      dToday += (b.end-b.start);
+      if(cont > 4.5*H + 30*MIN){
+        issues.push({sev:"grave", art:"Art.7 R.561/2006", txt:(LANG==="gl"?"Exceso de condución continua sen pausa 45'":"Exceso de conducción continua sin pausa 45'"), fine:"401–600 €"});
+      } else if(cont > 4.5*H){
+        issues.push({sev:"leve", art:"Art.7 R.561/2006", txt:(LANG==="gl"?"Exceso leve condución continua":"Exceso leve conducción continua"), fine:"100–400 €"});
+      }
+      if(dToday > 9*H) dayHadExtension = true;
+    } else if(b.type==="brk" && (b.end-b.start)>=45*MIN){
+      cont = 0;
+    } else if(b.type==="dailyr" || b.type==="weeklyr"){
+      cont = 0;
+      // end of day: check daily extension count
+      if(dayHadExtension){
+        extensionsUsed++;
+        if(extensionsUsed > 2){
+          issues.push({sev:"leve", art:"Art.6 R.561/2006", txt:(LANG==="gl"?"Máis de 2 prolongacións a 10h na semana":"Más de 2 prolongaciones a 10h en la semana"), fine:"100–400 €"});
+        }
+      }
+      if(dToday > 10*H + H){
+        issues.push({sev:"muyGrave", art:"Art.6 R.561/2006", txt:(LANG==="gl"?"Condución diaria >11h":"Conducción diaria >11h"), fine:"1.001–2.000 €"});
+      } else if(dToday > 10*H){
+        issues.push({sev:"grave", art:"Art.6 R.561/2006", txt:(LANG==="gl"?"Condución diaria >10h":"Conducción diaria >10h"), fine:"401–600 €"});
+      }
+      dToday = 0;
+      dayHadExtension = false;
+      if(b.type==="weeklyr") extensionsUsed = 0;
+    } else if(b.type==="work" && (b.end-b.start)>=45*MIN){
+      cont = 0;
+    }
+  }
+  // weekly limits
+  if(plan.drivenWeek > 56*H){
+    issues.push({sev:"muyGrave", art:"Art.6.2 R.561/2006", txt:(LANG==="gl"?"Condución semanal >56h":"Conducción semanal >56h"), fine:"1.001–2.000 €"});
+  }
+  if(plan.drivenBiweek > 90*H){
+    issues.push({sev:"muyGrave", art:"Art.6.3 R.561/2006", txt:(LANG==="gl"?"Condución bisemanal >90h":"Conducción bisemanal >90h"), fine:"1.001–2.000 €"});
+  }
+  // dedup
+  const uniq = [];
+  const seen = new Set();
+  for(const i of issues){
+    const k = i.sev+i.txt;
+    if(!seen.has(k)){ seen.add(k); uniq.push(i); }
+  }
+  return uniq;
+}
+
+/* =========================================================
+   CALC + RENDER
+   ========================================================= */
+function calcular(){
+  saveLast();
+  const input = readForm();
+  // adjust safety: if arrive mode, treat target = arriveAt - safety
+  let plan;
+  if(input.mode==="arrive"){
+    if(!input.arriveAt){ alert("Indica hora de llegada"); return; }
+    const target = parseDT(input.arriveAt) - input.safety*MIN;
+    plan = planFromArrival(input, target);
+  } else {
+    if(!input.departAt){ alert("Indica hora de salida"); return; }
+    plan = simulate(input, parseDT(input.departAt));
+    plan.start = parseDT(input.departAt);
+  }
+
+  // If multi-day, compute number of days
+  const start = plan.start, end = plan.arrival;
+  const days = Math.floor((new Date(end).setHours(0,0,0,0) - new Date(start).setHours(0,0,0,0))/(24*H)) + 1;
+
+  const issues = detectInfractions(input, plan);
+  const infeasible = (input.mode==="arrive") && (end > parseDT(input.arriveAt) + 5*MIN);
+
+  let html = "";
+
+  if(infeasible){
+    const need = parseDT(input.arriveAt) - (end-start);
+    html += `<div class="alert"><b>${t("impossible")}</b> ${t("arriveBefore")} <b>${fmtDT(need)}</b>.</div>`;
+  } else {
+    html += `<div class="alert ok">${t("ok")}</div>`;
+  }
+
+  // KPIs
+  const usedRed = 3 - input.reducedDailyUsed - plan.reducedLeft;
+  const usedExt = 2 - input.extendedDailyUsed - plan.extLeft;
+  html += `<div class="card"><h2>${t("legend")} & resumen</h2><div class="kpi">
+    <div class="b"><div class="l">${t("sumDepart")}</div><div class="v">${fmtT(start)}</div><div class="s">${fmtDate(start)}</div></div>
+    <div class="b"><div class="l">${t("sumArrive")}</div><div class="v">${fmtT(end)}</div><div class="s">${fmtDate(end)}</div></div>
+    <div class="b"><div class="l">${t("sumDrive")}</div><div class="v">${fmtHours(plan.totalDrive/H)}</div></div>
+    <div class="b"><div class="l">${t("sumRest")}</div><div class="v">${fmtHours(plan.totalRest/H)}</div></div>
+    <div class="b"><div class="l">${t("sumStops")}</div><div class="v">${plan.numStops}</div></div>
+    <div class="b"><div class="l">${t("sumDays")}</div><div class="v">${days}</div></div>
+    <div class="b"><div class="l">${t("extLeft")}</div><div class="v">${plan.extLeft} / 2</div><div class="s">${usedExt>0?("+"+usedExt+" "+(LANG==='gl'?'usadas':'usadas')):(LANG==='gl'?"sen usar":"sin usar")}</div></div>
+    <div class="b"><div class="l">${t("reducedLeft")}</div><div class="v">${plan.reducedLeft} / 3</div><div class="s">${usedRed>0?("+"+usedRed+" "+(LANG==='gl'?'usados':'usados')):(LANG==='gl'?"sen usar":"sin usar")}</div></div>
+  </div>
+  <div class="legend" style="margin-top:14px">
+    <span><i style="background:var(--drive)"></i>${t("drive")}</span>
+    <span><i style="background:var(--brk)"></i>${t("brk")}</span>
+    <span><i style="background:var(--dailyr)"></i>${t("dailyr")}</span>
+    <span><i style="background:var(--weeklyr)"></i>${t("weeklyr")}</span>
+    <span><i style="background:var(--work)"></i>${t("work")}</span>
+    <span><i style="background:var(--avail)"></i>${t("avail")}</span>
+  </div>
+  </div>`;
+
+  // Timeline split by calendar day
+  html += `<div class="card"><h2>${t("legend")} · Timeline</h2><div class="timeline">`;
+  // Group blocks by day
+  const dayMap = new Map();
+  for(const b of plan.blocks){
+    let cur = b.start;
+    while(cur < b.end){
+      const dEnd = new Date(cur); dEnd.setHours(24,0,0,0);
+      const segEnd = Math.min(b.end, dEnd.getTime());
+      const dayKey = new Date(cur).setHours(0,0,0,0);
+      if(!dayMap.has(dayKey)) dayMap.set(dayKey, []);
+      dayMap.get(dayKey).push({...b, start:cur, end:segEnd});
+      cur = segEnd;
+    }
+  }
+  const dayKeys = [...dayMap.keys()].sort();
+  for(const dk of dayKeys){
+    const dayBlocks = dayMap.get(dk);
+    const dStart = dk;
+    const dEnd = dk + 24*H;
+    html += `<div class="day"><div class="day-title"><span>${fmtDate(dk)}</span><span>${t("day")} ${dayKeys.indexOf(dk)+1}/${dayKeys.length}</span></div>
+      <div class="axis">${[0,3,6,9,12,15,18,21,24].map(h=>`<span style="left:${h/24*100}%">${String(h).padStart(2,"0")}</span>`).join("")}</div>
+      <div class="bar">`;
+    for(const b of dayBlocks){
+      const left = ((b.start-dStart)/(24*H))*100;
+      const width = ((b.end-b.start)/(24*H))*100;
+      const lbl = b.label || (b.type==="drive"?t("drive"):b.type==="brk"?t("brk"):b.type==="dailyr"?t("dailyr"):b.type==="weeklyr"?t("weeklyr"):b.type==="work"?t("work"):t("avail"));
+      const cls = b.type==="dailyr"?"dailyr":b.type==="weeklyr"?"weeklyr":b.type==="work"?"work":b.type==="avail"?"avail":b.type==="brk"?"brk":"drive";
+      const title = `${lbl} ${fmtT(b.start)}-${fmtT(b.end)}`;
+      html += `<div class="blk ${cls}" style="left:${left}%;width:${width}%" title="${title}">${width>5?lbl:''}</div>`;
+    }
+    html += `</div></div>`;
+  }
+  html += `</div></div>`;
+
+  // Blocks table
+  html += `<div class="card"><h2>Detalle bloques</h2><table><thead><tr><th>${t("legend")}</th><th>Inicio</th><th>Fin</th><th>Dur.</th></tr></thead><tbody>`;
+  for(const b of plan.blocks){
+    let lbl = b.type==="drive"?t("drive"):b.type==="brk"?t("brk"):b.type==="dailyr"?t("dailyr"):b.type==="weeklyr"?t("weeklyr"):b.type==="work"?t("work"):t("avail");
+    if(b.label && b.type!=="drive") lbl += ` · ${b.label}`;
+    const dur = (b.end-b.start)/H;
+    const pillCls = b.type==="drive"?"ok":b.type==="brk"?"warn":b.type==="dailyr"?"info":b.type==="weeklyr"?"warn":"info";
+    html += `<tr><td><span class="pill ${pillCls}">${lbl}</span></td><td>${fmtDT(b.start)}</td><td>${fmtDT(b.end)}</td><td>${fmtHours(dur)}</td></tr>`;
+  }
+  html += `</tbody></table></div>`;
+
+  // Infractions
+  if(issues.length){
+    html += `<div class="card"><h2>${t("infractions")}</h2>`;
+    for(const i of issues){
+      const sevPill = i.sev==="leve"?"warn":i.sev==="grave"?"err":"err";
+      html += `<div class="alert warn"><span class="pill ${sevPill}">${i.sev.toUpperCase()}</span> · ${i.txt} · <b>${i.fine}</b> · <span class="small">${i.art}</span></div>`;
+    }
+    html += `</div>`;
+  }
+
+  html += `<div class="card no-print" style="display:flex;gap:10px"><button class="btn sec" onclick="window.print()">${t("print")}</button><button class="btn" onclick="saveAsTrip()">${t("saveTrip")}</button></div>`;
+
+  // store last plan for save
+  LAST_PLAN = { input, plan, days, issues };
+  document.getElementById("result").innerHTML = html;
+  // also update status panel
+  updateLiveStatus(input, plan);
+}
+
+let LAST_PLAN = null;
+
+/* =========================================================
+   STATUS PANEL
+   ========================================================= */
+function updateLiveStatus(input, plan){
+  // nothing forced here, just store it
+}
+function renderStatus(){
+  const input = readForm();
+  // compute counters
+  const reducedLeft = 3 - input.reducedDailyUsed;
+  const extLeft = 2 - input.extendedDailyUsed;
+  const weeklyLeft = Math.max(0, 56 - input.drivenWeek);
+  const biweekLeft = Math.max(0, 90 - input.drivenBiweek);
+  const contLeft = Math.max(0, 270 - input.contSinceBreak);
+  const dailyLeft = Math.max(0, 9 - input.drivenToday);
+
+  let weeklyDueIn = "—";
+  if(input.lastWeeklyRest){
+    const due = parseDT(input.lastWeeklyRest) + 6*24*H;
+    weeklyDueIn = fmtDT(due);
+  }
+  let compPending = (input.lastWeeklyType==="reduced"?t("compPending"):t("noComp"));
+
+  document.getElementById("statusBox").innerHTML = `
+    <div class="kpi">
+      <div class="b"><div class="l">${t("nextBreak")}</div><div class="v">${contLeft} min</div><div class="s">${t("contSinceBreak")}: ${input.contSinceBreak}'</div></div>
+      <div class="b"><div class="l">${t("nextDailyRest")}</div><div class="v">${dailyLeft.toFixed(1)} h</div><div class="s">${t("drivenToday")}: ${input.drivenToday}h</div></div>
+      <div class="b"><div class="l">${t("weeklyDrive")}</div><div class="v">${input.drivenWeek.toFixed(1)} / 56 h</div><div class="s">${weeklyLeft.toFixed(1)} h ${t("hours")}</div></div>
+      <div class="b"><div class="l">${t("biweekDrive")}</div><div class="v">${input.drivenBiweek.toFixed(1)} / 90 h</div><div class="s">${biweekLeft.toFixed(1)} h ${t("hours")}</div></div>
+    </div>`;
+  document.getElementById("countersBox").innerHTML = `
+    <div class="kpi">
+      <div class="b"><div class="l">${t("reducedLeft")}</div><div class="v">${reducedLeft} / 3</div></div>
+      <div class="b"><div class="l">${t("extLeft")}</div><div class="v">${extLeft} / 2</div></div>
+      <div class="b"><div class="l">${t("weeklyRestStatus")}</div><div class="v" style="font-size:14px">${compPending}</div></div>
+      <div class="b"><div class="l">${t("weeklyRestDue")}</div><div class="v" style="font-size:14px">${weeklyDueIn}</div></div>
+    </div>`;
+}
+
+/* =========================================================
+   DIARY
+   ========================================================= */
+function loadTrips(){ try{ return JSON.parse(localStorage.getItem(LS_TRIPS))||[]; }catch(e){ return []; } }
+function saveTrips(arr){ localStorage.setItem(LS_TRIPS, JSON.stringify(arr)); }
+
+function saveAsTrip(){
+  if(!LAST_PLAN){ alert(LANG==="gl"?"Primeiro calcula un planning":"Primero calcula un planning"); return; }
+  const trips = loadTrips();
+  const id = Date.now().toString(36);
+  trips.unshift({
+    id,
+    createdAt: Date.now(),
+    input: LAST_PLAN.input,
+    plannedStart: LAST_PLAN.plan.start,
+    plannedEnd: LAST_PLAN.plan.arrival,
+    realEnd: null,
+    label: { load:"full", route:"mix", weather:"dry" }
+  });
+  saveTrips(trips.slice(0,30));
+  alert(t("saveOK"));
+  renderDiary();
+}
+function closeTrip(id){
+  const trips = loadTrips();
+  const tr = trips.find(x=>x.id===id);
+  if(!tr) return;
+  const iso = new Date().toISOString().slice(0,16);
+  const v = prompt(LANG==="gl"?"Hora real de chegada (YYYY-MM-DD HH:MM):":"Hora real de llegada (YYYY-MM-DD HH:MM):", iso.replace("T"," "));
+  if(!v) return;
+  const ms = new Date(v.replace(" ","T")).getTime();
+  if(isNaN(ms)) return;
+  tr.realEnd = ms;
+  saveTrips(trips);
+  renderDiary();
+}
+function deleteTrip(id){
+  const trips = loadTrips().filter(x=>x.id!==id);
+  saveTrips(trips);
+  renderDiary();
+}
+function setLabel(id, key, val){
+  const trips = loadTrips();
+  const tr = trips.find(x=>x.id===id);
+  if(!tr) return;
+  tr.label[key] = val;
+  saveTrips(trips);
+  renderLearned();
+}
+function renderDiary(){
+  const trips = loadTrips();
+  const c = document.getElementById("diaryList");
+  if(!trips.length){ c.innerHTML = `<div class="small">${t("noTrips")}</div>`; renderLearned(); return; }
+  c.innerHTML = trips.map(tr=>{
+    const drive = tr.input.km/tr.input.vavg;
+    const realH = tr.realEnd ? ((tr.realEnd - tr.plannedStart)/H) : null;
+    const realSpeed = tr.realEnd ? (tr.input.km / Math.max(0.5, ((tr.realEnd - tr.plannedStart - 11*H*Math.floor((tr.realEnd-tr.plannedStart)/(24*H)))/H || drive))) : null;
+    // simpler: real speed = km / driveHours from plan if not closed
+    return `<details ${tr.realEnd?'':'open'}><summary>
+      <b>${tr.input.km} km</b> · ${fmtDate(tr.plannedStart)} → ${fmtDate(tr.plannedEnd)}
+      ${tr.realEnd?`<span class="pill ok" style="margin-left:6px">${t("closed")}</span>`:`<span class="pill warn" style="margin-left:6px">●</span>`}
+    </summary>
+      <div class="kpi" style="margin-top:8px">
+        <div class="b"><div class="l">${t("sumDepart")}</div><div class="v" style="font-size:14px">${fmtDT(tr.plannedStart)}</div></div>
+        <div class="b"><div class="l">${t("sumArrive")}</div><div class="v" style="font-size:14px">${fmtDT(tr.plannedEnd)}</div></div>
+        ${tr.realEnd?`<div class="b"><div class="l">${t("closedAt")}</div><div class="v" style="font-size:14px">${fmtDT(tr.realEnd)}</div></div>`:""}
+        ${tr.realEnd?`<div class="b"><div class="l">${t("realSpeed")}</div><div class="v">${(tr.input.km/((tr.realEnd-tr.plannedStart)/H)).toFixed(0)} km/h*</div></div>`:""}
+      </div>
+      <div class="row" style="margin-top:8px">
+        <div><label>${t("loadType")}</label>
+          <select onchange="setLabel('${tr.id}','load',this.value)">
+            ${["empty","half","full","mma"].map(v=>`<option value="${v}" ${tr.label.load===v?'selected':''}>${t('load'+v[0].toUpperCase()+v.slice(1))}</option>`).join("")}
+          </select></div>
+        <div><label>${t("routeType")}</label>
+          <select onchange="setLabel('${tr.id}','route',this.value)">
+            ${[["auto","Auto"],["nat","Nat"],["mt","Mt"],["mix","Mix"]].map(([v,k])=>`<option value="${v}" ${tr.label.route===v?'selected':''}>${t('route'+k)}</option>`).join("")}
+          </select></div>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <div><label>${t("weather")}</label>
+          <select onchange="setLabel('${tr.id}','weather',this.value)">
+            ${[["dry","Dry"],["rain","Rain"],["snow","Snow"]].map(([v,k])=>`<option value="${v}" ${tr.label.weather===v?'selected':''}>${t('w'+k)}</option>`).join("")}
+          </select></div>
+        <div style="display:flex;gap:6px;align-items:end">
+          ${tr.realEnd?'':`<button class="btn sec" onclick="closeTrip('${tr.id}')">${t("closeTrip")}</button>`}
+          <button class="btn danger" onclick="deleteTrip('${tr.id}')">${t("delete")}</button>
+        </div>
+      </div>
+    </details>`;
+  }).join("");
+  renderLearned();
+}
+function renderLearned(){
+  const trips = loadTrips().filter(t=>t.realEnd);
+  const c = document.getElementById("learnedBox");
+  if(!trips.length){ c.innerHTML = `<div class="small">${t("noLearned")}</div>`; return; }
+  // group by load+route
+  const groups = {};
+  for(const tr of trips){
+    const k = `${tr.label.load}_${tr.label.route}`;
+    if(!groups[k]) groups[k] = { kmSum:0, hSum:0, n:0 };
+    const elapsed = (tr.realEnd - tr.plannedStart)/H;
+    // rough drive hours estimate: assume same proportion as planned
+    const plannedTotalH = (tr.plannedEnd - tr.plannedStart)/H;
+    const driveH = tr.input.km/tr.input.vavg;
+    const restRatio = driveH/Math.max(1,plannedTotalH);
+    const realDriveH = elapsed * restRatio;
+    groups[k].kmSum += tr.input.km;
+    groups[k].hSum += realDriveH;
+    groups[k].n++;
+  }
+  let html = `<table><thead><tr><th>${t("loadType")}</th><th>${t("routeType")}</th><th>${t("realSpeed")}</th><th>n</th></tr></thead><tbody>`;
+  for(const [k,g] of Object.entries(groups)){
+    const [load,route] = k.split("_");
+    const v = g.kmSum/Math.max(0.1,g.hSum);
+    html += `<tr><td>${t("load"+load[0].toUpperCase()+load.slice(1))}</td><td>${t("route"+route[0].toUpperCase()+route.slice(1))}</td><td><b>${v.toFixed(0)} km/h</b></td><td>${g.n}</td></tr>`;
+  }
+  html += `</tbody></table>`;
+  c.innerHTML = html;
+}
+
+/* =========================================================
+   FINES TABLE
+   ========================================================= */
+function renderFines(){
+  const data = LANG==="gl" ? [
+    {sev:"Leve", txt:"Exceso condución diaria ata 1h (>9h)", fine:"100–400 €"},
+    {sev:"Grave", txt:"Condución diaria 10–11h sen prolongación dispoñible", fine:"401–600 €"},
+    {sev:"Moi grave", txt:"Condución diaria >11h", fine:"1.001–2.000 €"},
+    {sev:"Leve", txt:"Condución continua >4h30' ata +30 min", fine:"100–400 €"},
+    {sev:"Grave", txt:"Condución continua excedida >30 min ata 1h", fine:"401–600 €"},
+    {sev:"Moi grave", txt:"Condución continua excedida >1h", fine:"1.001–2.000 €"},
+    {sev:"Leve", txt:"Descanso diario <11h (>9h) 4ª vez na semana", fine:"100–400 €"},
+    {sev:"Moi grave", txt:"Descanso diario <9h", fine:"1.001–2.000 €"},
+    {sev:"Grave", txt:"Descanso semanal reducido <45h e >24h sen compensación", fine:"401–600 €"},
+    {sev:"Moi grave", txt:"Descanso semanal <24h", fine:"1.001–2.000 €"},
+    {sev:"Moi grave", txt:"Condución semanal >56h", fine:"1.001–2.000 €"},
+    {sev:"Moi grave", txt:"Condución bisemanal >90h", fine:"1.001–2.000 €"}
+  ] : [
+    {sev:"Leve", txt:"Exceso conducción diaria hasta 1h (>9h)", fine:"100–400 €"},
+    {sev:"Grave", txt:"Conducción diaria 10–11h sin prolongación disponible", fine:"401–600 €"},
+    {sev:"Muy grave", txt:"Conducción diaria >11h", fine:"1.001–2.000 €"},
+    {sev:"Leve", txt:"Conducción continua >4h30' hasta +30 min", fine:"100–400 €"},
+    {sev:"Grave", txt:"Conducción continua excedida >30 min hasta 1h", fine:"401–600 €"},
+    {sev:"Muy grave", txt:"Conducción continua excedida >1h", fine:"1.001–2.000 €"},
+    {sev:"Leve", txt:"Descanso diario <11h (>9h) 4ª vez en la semana", fine:"100–400 €"},
+    {sev:"Muy grave", txt:"Descanso diario <9h", fine:"1.001–2.000 €"},
+    {sev:"Grave", txt:"Descanso semanal reducido <45h y >24h sin compensación", fine:"401–600 €"},
+    {sev:"Muy grave", txt:"Descanso semanal <24h", fine:"1.001–2.000 €"},
+    {sev:"Muy grave", txt:"Conducción semanal >56h", fine:"1.001–2.000 €"},
+    {sev:"Muy grave", txt:"Conducción bisemanal >90h", fine:"1.001–2.000 €"}
+  ];
+  document.getElementById("finesList").innerHTML = data.map(d=>{
+    const pill = d.sev.toLowerCase().includes("moi")||d.sev.toLowerCase().includes("muy")?"err":d.sev.toLowerCase()==="grave"?"warn":"info";
+    return `<li><span class="pill ${pill}">${d.sev}</span> <b>${d.txt}</b> — ${d.fine}</li>`;
+  }).join("");
+}
+
+/* =========================================================
+   INIT
+   ========================================================= */
+window.addEventListener("DOMContentLoaded", ()=>{
+  // default arrive datetime = tomorrow 09:00
+  const tmr = new Date(); tmr.setDate(tmr.getDate()+1); tmr.setHours(9,0,0,0);
+  document.getElementById("arriveAt").value = new Date(tmr.getTime()-tmr.getTimezoneOffset()*60000).toISOString().slice(0,16);
+  const now = new Date(); now.setMinutes(0,0,0);
+  document.getElementById("departAt").value = new Date(now.getTime()-now.getTimezoneOffset()*60000).toISOString().slice(0,16);
+  // default last weekly rest = 2 days ago at 22:00
+  const lwr = new Date(); lwr.setDate(lwr.getDate()-2); lwr.setHours(22,0,0,0);
+  document.getElementById("lastWeeklyRest").value = new Date(lwr.getTime()-lwr.getTimezoneOffset()*60000).toISOString().slice(0,16);
+  // prefill liveNow with current local datetime
+  const nowDt = new Date(); nowDt.setSeconds(0,0);
+  document.getElementById("liveNow").value = new Date(nowDt.getTime()-nowDt.getTimezoneOffset()*60000).toISOString().slice(0,16);
+
+  loadLast();
+  applyI18N();
+  renderStops();
+  // autosave on input
+  document.querySelectorAll("input,select").forEach(el=>el.addEventListener("change", saveLast));
+});
+</script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"7f7b0fd8732c4326aae4b9d58d5c514a","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>
